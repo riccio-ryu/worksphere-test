@@ -295,3 +295,144 @@
   font-size: 13px;
   color: var(--text-muted);
 }
+
+/* 카드 본문 버튼 — 기본 버튼 모양을 지우고 카드 영역을 그대로 쓴다 */
+.card__open {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  padding: 0;
+  text-align: left;
+  background: none;
+  border: 0;
+  color: inherit;
+}
+
+.card--selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.panel__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(9, 30, 66, 0.45);
+  animation: backdrop-in 0.15s ease;
+}
+
+@keyframes backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 320px;
+  padding: 20px;
+  overflow-y: auto;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  box-shadow: -4px 0 16px rgba(9, 30, 66, 0.2);
+  animation: panel-in 0.18s ease;
+  z-index: 1;
+}
+
+@keyframes panel-in {
+  from { transform: translateX(16px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel__backdrop, .panel { animation: none; }
+}
+
+.panel__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+}
+
+.panel__close:hover {
+  color: var(--text);
+  background: #f4f5f7;
+  border-color: var(--border);
+}
+
+.panel__actions {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.panel__actions-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.panel__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.panel__title {
+  margin: 0;
+  font-size: 18px;
+}
+
+.panel__fields {
+  margin: 0;
+}
+
+.panel__row {
+  display: flex;
+  gap: 12px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.panel__label {
+  flex: 0 0 72px;
+  color: var(--text-muted);
+}
+
+.panel__value {
+  margin: 0;
+  word-break: break-all;
+}
+
+.panel__summary {
+  margin: 16px 0 0;
+  padding: 12px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-muted);
+  background: #f4f5f7;
+  border-radius: var(--radius);
+}
+
+@media (max-width: 900px) {
+  .panel { width: 100%; }
+}

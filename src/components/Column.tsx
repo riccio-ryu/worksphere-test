@@ -5,10 +5,12 @@ interface Props {
   stage: Stage;
   applicants: Applicant[];
   pendingIds: Record<string, unknown>;
+  selectedId: string | null;
   onMove: (id: string, stage: Stage) => void;
+  onSelect: (id: string) => void;
 }
 
-export function Column({ stage, applicants, pendingIds, onMove }: Props) {
+export function Column({ stage, applicants, pendingIds, selectedId, onMove, onSelect }: Props) {
   const headingId = `column-heading-${stage}`;
 
   return (
@@ -27,7 +29,9 @@ export function Column({ stage, applicants, pendingIds, onMove }: Props) {
               key={applicant.id}
               applicant={applicant}
               pending={Boolean(pendingIds[applicant.id])}
+              selected={selectedId === applicant.id}
               onMove={onMove}
+              onSelect={onSelect}
             />
           ))}
         </ul>

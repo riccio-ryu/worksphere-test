@@ -3,6 +3,7 @@ import { Board } from "./components/Board";
 import { ALL_ROLES, BoardFilters } from "./components/BoardFilters";
 import { BoardEmpty, BoardError, BoardSkeleton } from "./components/BoardStates";
 import { DemoControls } from "./components/DemoControls";
+import { DetailPanel } from "./components/DetailPanel";
 import { Toast } from "./components/Toast";
 import { useApplicants } from "./state/useApplicants";
 import "./components/board.css";
@@ -11,6 +12,7 @@ function App() {
   const { state, move, reload, dismissToast } = useApplicants();
   const [query, setQuery] = useState("");
   const [role, setRole] = useState<string>(ALL_ROLES);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   // 타이핑은 즉시 반영하고 1,000건 재계산은 한 박자 늦춘다.
   // 입력 값과 목록 계산을 같은 렌더에 묶으면 글자마다 보드 전체가 다시 그려져 입력이 끊긴다.
@@ -32,6 +34,8 @@ function App() {
   }, [applicants, deferredQuery, role]);
 
   const filtering = deferredQuery.trim() !== "" || role !== ALL_ROLES;
+  // 선택된 카드는 byId 에서 다시 읽는다. 단계가 바뀌면 패널 내용도 따라 바뀐다.
+  const selected = selectedId ? (state.byId[selectedId] ?? null) : null;
 
   return (
     <main className="app">
@@ -58,8 +62,23 @@ function App() {
         (visible.length === 0 ? (
           <BoardEmpty filtered={filtering} />
         ) : (
-          <Board applicants={visible} pendingIds={state.pending} onMove={move} />
+          <Board
+            applicants={visible}
+            pendingIds={state.pending}
+            selectedId={selectedId}
+            onMove={move}
+            onSelect={(id) => setSelectedId((current) => (current === id ? null : id))}
+          />
         ))}
+
+      {selected && (
+        <DetailPanel
+          applicant={selected}
+          pending={Boolean(state.pending[selected.id])}
+          onMove={move}
+          onClose={() => setSelectedId(null)}
+        />
+      )}
 
       {state.toast && (
         <Toast toastKey={state.toast.key} message={state.toast.message} onDismiss={dismissToast} />
