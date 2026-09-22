@@ -1,0 +1,105 @@
+.app {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.app__title {
+  margin: 0 0 4px;
+  font-size: 20px;
+}
+
+.app__summary {
+  margin: 0 0 20px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(200px, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+
+.column {
+  min-width: 0;
+  padding: 10px;
+  background: #ebecf0;
+  border-radius: var(--radius);
+}
+
+.column__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.column__count {
+  padding: 1px 8px;
+  font-size: 12px;
+  background: #dfe1e6;
+  border-radius: 10px;
+}
+
+.column__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.column__empty {
+  margin: 0;
+  padding: 12px 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.card {
+  padding: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 1px 1px rgba(9, 30, 66, 0.12);
+}
+
+.card__name {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.card__role {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.card__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.card__stage {
+  padding: 1px 6px;
+  color: var(--accent);
+  background: #e9f2ff;
+  border-radius: 3px;
+  white-space: nowrap;
+}
