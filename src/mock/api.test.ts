@@ -17,13 +17,17 @@ afterEach(() => {
 describe("조회", () => {
   // 한 번만 재면 "이번 호출이 범위 안이었다"밖에 모른다.
   // 늘 같은 값을 돌려주도록 잘못 바뀌어도 통과하므로 여러 번 재서 흩어짐까지 본다.
+  //
+  // 순차로 재면 8회 × 최대 800ms = 6.4초가 되어 기본 타임아웃(5초)을 넘길 수 있다.
+  // 동시에 보내면 전체 소요가 가장 느린 한 건(최대 800ms)으로 줄고 표본은 그대로다.
   it("지연이 200~800ms 범위에서 매번 달라진다", async () => {
-    const samples: number[] = [];
-    for (let i = 0; i < 8; i++) {
+    const measure = async () => {
       const started = Date.now();
       await fetchApplicants();
-      samples.push(Date.now() - started);
-    }
+      return Date.now() - started;
+    };
+
+    const samples = await Promise.all(Array.from({ length: 8 }, measure));
 
     expect(Math.min(...samples)).toBeGreaterThanOrEqual(MOCK_CONFIG.minLatency);
     // 타이머는 정확히 깨어나지 않으므로 상한에만 여유를 둔다.
