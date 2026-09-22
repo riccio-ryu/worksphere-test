@@ -11,7 +11,7 @@ import { useApplicants } from "./state/useApplicants";
 import "./components/board.css";
 
 function App() {
-  const { state, move, undo, reload, dismissToast } = useApplicants();
+  const { state, move, undo, dismissUndo, reload, dismissToast } = useApplicants();
   const [query, setQuery] = useState("");
   const [role, setRole] = useState<string>(ALL_ROLES);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -111,6 +111,7 @@ function App() {
             void undo();
             if (target) setFocusRequest((current) => ({ id: target.id, seq: current.seq + 1 }));
           }}
+          onDismiss={dismissUndo}
         />
       )}
 

@@ -295,3 +295,24 @@ describe("되돌리기 대상", () => {
     expect(state.lastMove).toBeNull();
   });
 });
+
+describe("되돌리기 실패", () => {
+  // 되돌리기도 실패할 수 있다. 대상을 잃으면 다시 시도할 방법이 없어진다.
+  it("이동이 실패해도 되돌리기 대상은 남는다", () => {
+    let state = applicantsReducer(ready(), { type: "move/start", id: "A3", stage: "면접" });
+    state = applicantsReducer(state, { type: "move/success", applicant: applicant("A3", "면접") });
+    const target = state.lastMove;
+
+    // 되돌리기 요청이 실패한 상황
+    state = applicantsReducer(state, { type: "move/start", id: "A3", stage: "서류검토" });
+    state = applicantsReducer(state, {
+      type: "move/failure",
+      id: "A3",
+      message: "되돌리기를 저장하지 못했습니다.",
+    });
+
+    expect(state.lastMove).toEqual(target);
+    expect(state.byId.A3.stage).toBe("면접");
+    expect(state.toast?.message).toBe("되돌리기를 저장하지 못했습니다.");
+  });
+});

@@ -24,7 +24,7 @@ export function useApplicants() {
   }, []);
 
   const move = useCallback(
-    (id: string, stage: Stage) => {
+    (id: string, stage: Stage, failureMessage?: string) => {
       // 화면은 누르는 즉시 바꾸고, 서버 요청만 카드별로 줄을 세운다.
       dispatch({ type: "move/start", id, stage });
 
@@ -33,11 +33,8 @@ export function useApplicants() {
           const applicant = await updateStage(id, stage);
           dispatch({ type: "move/success", applicant });
         } catch (error) {
-          dispatch({
-            type: "move/failure",
-            id,
-            message: error instanceof Error ? error.message : "단계 이동에 실패했습니다.",
-          });
+          const fallback = error instanceof Error ? error.message : "단계 이동에 실패했습니다.";
+          dispatch({ type: "move/failure", id, message: failureMessage ?? fallback });
         }
       });
     },
@@ -60,8 +57,14 @@ export function useApplicants() {
     const { lastMove: last, move: latestMove } = latest.current;
     if (!last) return;
 
+    // 여기서 lastMove 를 지우지 않는다. 되돌리기도 실패할 수 있는데
+    // 미리 지우면 실패했을 때 다시 시도할 방법이 사라진다.
+    // 성공하면 move/success 가 새 대상으로 덮어쓴다.
+    return latestMove(last.id, last.from, "되돌리기를 저장하지 못했습니다.");
+  }, []);
+
+  const dismissUndo = useCallback(() => {
     dispatch({ type: "undo/clear" });
-    return latestMove(last.id, last.from);
   }, []);
 
   const dismissToast = useCallback(() => {
@@ -72,5 +75,5 @@ export function useApplicants() {
     void reload();
   }, [reload]);
 
-  return { state, move, undo, reload, dismissToast };
+  return { state, move, undo, dismissUndo, reload, dismissToast };
 }
