@@ -44,7 +44,7 @@ npm run dev
 | S3 | Should | 되돌리기 | `undo` | 11 | |
 | S4 | Should | 핵심 로직(롤백) 테스트 | `test` | 7 | |
 | S5 | Should | 키보드만으로 단계 이동·상세 열람 | `a11y-keyboard` | 10 | |
-| C1 | 제약 | mock API — 지연 200~800ms, 실패 약 15%, 영속 | `mock-api` | 1 | |
+| C1 | 제약 | mock API — 지연 200~800ms, 실패 약 15%, 영속 | `mock-api` | 1 | ✅ |
 
 ### 작업 순서를 이렇게 잡은 이유
 
