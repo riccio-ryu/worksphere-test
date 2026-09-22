@@ -6,7 +6,7 @@ import { useApplicants } from "./state/useApplicants";
 import "./components/board.css";
 
 function App() {
-  const { state, reload } = useApplicants();
+  const { state, move, reload } = useApplicants();
 
   // order 와 byId 가 그대로면 같은 배열을 돌려줘 Board 의 그룹핑 메모가 유지된다.
   const applicants = useMemo(
@@ -35,7 +35,11 @@ function App() {
         <BoardError message={state.error ?? "알 수 없는 오류가 발생했습니다."} onRetry={reload} />
       )}
       {state.status === "ready" &&
-        (applicants.length === 0 ? <BoardEmpty /> : <Board applicants={applicants} />)}
+        (applicants.length === 0 ? (
+          <BoardEmpty />
+        ) : (
+          <Board applicants={applicants} moving={state.moving} onMove={move} />
+        ))}
     </main>
   );
 }

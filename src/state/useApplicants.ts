@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useReducer } from "react";
-import { fetchApplicants } from "../mock/api";
+import { fetchApplicants, updateStage } from "../mock/api";
 import { applicantsReducer, initialState } from "./applicantsReducer";
+import type { Stage } from "../types";
 
 export function useApplicants() {
   const [state, dispatch] = useReducer(applicantsReducer, initialState);
@@ -19,9 +20,20 @@ export function useApplicants() {
     }
   }, []);
 
+  const move = useCallback(async (id: string, stage: Stage) => {
+    dispatch({ type: "move/start", id });
+
+    try {
+      const applicant = await updateStage(id, stage);
+      dispatch({ type: "move/success", applicant });
+    } catch {
+      dispatch({ type: "move/failure", id });
+    }
+  }, []);
+
   useEffect(() => {
     void reload();
   }, [reload]);
 
-  return { state, dispatch, reload };
+  return { state, move, reload };
 }

@@ -105,3 +105,22 @@ describe("단계 이동", () => {
     await expect(updateStage("없는id", "면접")).rejects.toBeInstanceOf(ApiError);
   });
 });
+
+describe("목록 순서", () => {
+  it("방금 옮긴 지원자가 맨 앞으로 온다", async () => {
+    noDelay();
+    MOCK_CONFIG.writeFailureRate = 0;
+
+    const before = await fetchApplicants();
+    const targetId = before[500].id;
+    expect(before[0].id).not.toBe(targetId);
+
+    await updateStage(targetId, "면접");
+    const after = await fetchApplicants();
+
+    expect(after[0].id).toBe(targetId);
+    // 순서만 바뀌고 사라지는 지원자는 없어야 한다.
+    expect(after).toHaveLength(before.length);
+    expect(new Set(after.map((a) => a.id))).toEqual(new Set(before.map((a) => a.id)));
+  });
+});

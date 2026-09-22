@@ -79,8 +79,10 @@ export async function updateStage(id: string, stage: Stage): Promise<Applicant> 
     throw new ApiError("존재하지 않는 지원자입니다.");
   }
 
+  // 최근에 바뀐 지원자를 앞에 둔다. 실제 API 가 updated_at 내림차순으로 주는 것과 같은 규칙이다.
   const updated = { ...list[index], stage };
-  list[index] = updated;
+  list.splice(index, 1);
+  list.unshift(updated);
   writeStore(list);
 
   return updated;

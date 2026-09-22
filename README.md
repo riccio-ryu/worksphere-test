@@ -41,7 +41,7 @@ npm test        # 단위 테스트
 | ID | 구분 | 요구사항 | 커밋 scope | 작업 순서 | 상태 |
 |---|---|---|---|---|---|
 | M1 | Must | 단계별 컬럼에 지원자 카드 (이름·직무·지원일·현재 단계) | `board-layout` | 2 | ✅ |
-| M2 | Must | 단계 이동 + mock API 저장 (새로고침 후 유지) | `stage-move` | 4 | |
+| M2 | Must | 단계 이동 + mock API 저장 (새로고침 후 유지) | `stage-move` | 4 | ✅ |
 | M3 | Must | 낙관적 업데이트 + 실패 시 롤백 + 사용자 피드백 | `optimistic-update` | 5 | |
 | M4 | Must | 이름 검색 + 직무 필터 (200건 이상에서도 지연 없이) | `search-filter` | 8 | |
 | M5 | Must | 카드 클릭 시 지원자 상세 | `detail-panel` | 9 | |

@@ -4,9 +4,11 @@ import { ApplicantCard } from "./ApplicantCard";
 interface Props {
   stage: Stage;
   applicants: Applicant[];
+  moving: Record<string, true>;
+  onMove: (id: string, stage: Stage) => void;
 }
 
-export function Column({ stage, applicants }: Props) {
+export function Column({ stage, applicants, moving, onMove }: Props) {
   const headingId = `column-heading-${stage}`;
 
   return (
@@ -21,7 +23,12 @@ export function Column({ stage, applicants }: Props) {
       ) : (
         <ul className="column__list">
           {applicants.map((applicant) => (
-            <ApplicantCard key={applicant.id} applicant={applicant} />
+            <ApplicantCard
+              key={applicant.id}
+              applicant={applicant}
+              moving={Boolean(moving[applicant.id])}
+              onMove={onMove}
+            />
           ))}
         </ul>
       )}
