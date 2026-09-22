@@ -53,10 +53,20 @@ describe("낙관적 이동", () => {
     expect(state.order).toEqual(["A3", "A1", "A2", "A4", "A5"]);
   });
 
-  it("되돌릴 값으로 이전 단계와 이전 위치를 남긴다", () => {
+  it("되돌릴 값으로 이전 단계와 바로 앞 카드를 남긴다", () => {
     const state = applicantsReducer(ready(), { type: "move/start", id: "A3", stage: "면접" });
 
-    expect(state.pending.A3).toEqual({ previousStage: "서류검토", previousIndex: 2 });
+    expect(state.pending.A3).toEqual({
+      previousStage: "서류검토",
+      previousAnchorId: "A2",
+      inFlight: 1,
+    });
+  });
+
+  it("맨 앞 카드는 기준점이 없다", () => {
+    const state = applicantsReducer(ready(), { type: "move/start", id: "A1", stage: "면접" });
+
+    expect(state.pending.A1.previousAnchorId).toBeNull();
   });
 
   it("없는 지원자는 아무것도 바꾸지 않는다", () => {
@@ -151,5 +161,81 @@ describe("실패 롤백", () => {
     expect(
       applicantsReducer(base, { type: "move/failure", id: "A3", message: "저장 실패" }),
     ).toBe(base);
+  });
+});
+
+describe("경쟁 상태", () => {
+  const move = (state: State, id: string, stage: Applicant["stage"]) =>
+    applicantsReducer(state, { type: "move/start", id, stage });
+  const fail = (state: State, id: string) =>
+    applicantsReducer(state, { type: "move/failure", id, message: "저장 실패" });
+  const succeed = (state: State, id: string, stage: Applicant["stage"]) =>
+    applicantsReducer(state, { type: "move/success", applicant: applicant(id, stage) });
+
+  it("같은 카드를 연속으로 누르면 스냅샷을 덮지 않는다", () => {
+    let state = move(ready(), "A3", "면접");
+    state = move(state, "A3", "처우협의");
+
+    // 두 번째 스냅샷으로 덮였다면 확정된 적 없는 '면접'으로 되돌아가게 된다.
+    expect(state.pending.A3.previousStage).toBe("서류검토");
+    expect(state.pending.A3.inFlight).toBe(2);
+    expect(state.byId.A3.stage).toBe("처우협의");
+  });
+
+  it("앞선 요청이 실패해도 뒤 요청이 남아 있으면 되돌리지 않는다", () => {
+    let state = move(ready(), "A3", "면접");
+    state = move(state, "A3", "처우협의");
+    state = fail(state, "A3");
+
+    expect(state.byId.A3.stage).toBe("처우협의");
+    expect(state.pending.A3.inFlight).toBe(1);
+    expect(state.toast).toBeNull();
+  });
+
+  it("마지막 응답이 성공이면 그 값으로 확정된다", () => {
+    let state = move(ready(), "A3", "면접");
+    state = move(state, "A3", "처우협의");
+    state = fail(state, "A3");
+    state = succeed(state, "A3", "처우협의");
+
+    expect(state.byId.A3.stage).toBe("처우협의");
+    expect(state.pending).toEqual({});
+    expect(state.toast).toBeNull();
+  });
+
+  it("마지막 응답이 실패면 처음 확정 상태로 되돌린다", () => {
+    let state = move(ready(), "A3", "면접");
+    state = move(state, "A3", "처우협의");
+    state = succeed(state, "A3", "면접");
+    state = fail(state, "A3");
+
+    // 중간에 성공한 '면접'이 아니라 누르기 전의 '서류검토'로 돌아가야 한다.
+    expect(state.byId.A3.stage).toBe("서류검토");
+    expect(state.order).toEqual(["A1", "A2", "A3", "A4", "A5"]);
+    expect(state.toast?.message).toBe("저장 실패");
+  });
+
+  // 인덱스로 위치를 기억하면 그 사이 다른 카드가 앞으로 이동했을 때 한 칸씩 밀린다.
+  it("다른 카드가 먼저 이동해도 원래 자리로 되돌아간다", () => {
+    let state = move(ready(), "A3", "면접");
+    state = move(state, "A5", "면접");
+    expect(state.order).toEqual(["A5", "A3", "A1", "A2", "A4"]);
+
+    state = fail(state, "A3");
+
+    // A5 는 아직 이동 중이라 앞에 남고, A3 는 A2 뒤 원래 자리로 돌아간다.
+    expect(state.order).toEqual(["A5", "A1", "A2", "A3", "A4"]);
+  });
+
+  it("두 카드를 동시에 옮겨도 서로의 롤백에 간섭하지 않는다", () => {
+    const before = ready();
+    let state = move(before, "A2", "면접");
+    state = move(state, "A4", "처우협의");
+    state = fail(state, "A2");
+    state = fail(state, "A4");
+
+    expect(state.byId).toEqual(before.byId);
+    expect(state.order).toEqual(before.order);
+    expect(state.pending).toEqual({});
   });
 });

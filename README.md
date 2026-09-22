@@ -66,7 +66,7 @@ mock API는 쓰기 요청을 약 15% 확률로 실패시킨다. 실패하면 **�
 | M4 | Must | 이름 검색 + 직무 필터 (200건 이상에서도 지연 없이) | `search-filter` | 8 | ✅ |
 | M5 | Must | 카드 클릭 시 지원자 상세 | `detail-panel` | 9 | ✅ |
 | M6 | Must | 로딩 / 에러 / 빈 상태 | `loading-error-empty` | 3 | ✅ |
-| S1 | Should | 같은 카드 연속 이동 시 경쟁 상태 처리 | `race-condition` | 6 | |
+| S1 | Should | 같은 카드 연속 이동 시 경쟁 상태 처리 | `race-condition` | 6 | ✅ |
 | S2 | Should | 1,000건 기준 스크롤·필터 성능 (가상 스크롤) | `virtualization` | 12 | |
 | S3 | Should | 되돌리기 | `undo` | 11 | |
 | S4 | Should | 핵심 로직(롤백) 테스트 | `test` | 7 | ✅ |

@@ -1,10 +1,13 @@
-import { useCallback, useEffect, useReducer } from "react";
+import { useCallback, useEffect, useReducer, useRef } from "react";
 import { fetchApplicants, updateStage } from "../mock/api";
 import { applicantsReducer, initialState } from "./applicantsReducer";
+import { createRequestQueue } from "./requestQueue";
 import type { Stage } from "../types";
 
 export function useApplicants() {
   const [state, dispatch] = useReducer(applicantsReducer, initialState);
+  // 카드별로 요청을 한 줄로 세운다. 렌더마다 새로 만들면 줄이 끊긴다.
+  const enqueue = useRef(createRequestQueue()).current;
 
   const reload = useCallback(async () => {
     dispatch({ type: "fetch/start" });
@@ -20,21 +23,26 @@ export function useApplicants() {
     }
   }, []);
 
-  const move = useCallback(async (id: string, stage: Stage) => {
-    // 화면을 먼저 바꾸고 요청을 보낸다.
-    dispatch({ type: "move/start", id, stage });
+  const move = useCallback(
+    (id: string, stage: Stage) => {
+      // 화면은 누르는 즉시 바꾸고, 서버 요청만 카드별로 줄을 세운다.
+      dispatch({ type: "move/start", id, stage });
 
-    try {
-      const applicant = await updateStage(id, stage);
-      dispatch({ type: "move/success", applicant });
-    } catch (error) {
-      dispatch({
-        type: "move/failure",
-        id,
-        message: error instanceof Error ? error.message : "단계 이동에 실패했습니다.",
+      return enqueue(id, async () => {
+        try {
+          const applicant = await updateStage(id, stage);
+          dispatch({ type: "move/success", applicant });
+        } catch (error) {
+          dispatch({
+            type: "move/failure",
+            id,
+            message: error instanceof Error ? error.message : "단계 이동에 실패했습니다.",
+          });
+        }
       });
-    }
-  }, []);
+    },
+    [enqueue],
+  );
 
   const dismissToast = useCallback(() => {
     dispatch({ type: "toast/dismiss" });

@@ -2,10 +2,17 @@ import type { Applicant, Stage } from "../types";
 
 export type Status = "loading" | "ready" | "error";
 
-/** 낙관적으로 화면을 바꾸기 직전의 모습. 실패하면 이 값으로 되돌린다. */
+/**
+ * 낙관적으로 화면을 바꾸기 직전의 모습. 실패하면 이 값으로 되돌린다.
+ * 같은 카드를 연속으로 누르면 요청이 겹치므로, 스냅샷은 첫 요청 때 한 번만 남기고
+ * 진행 중인 요청 수를 센다. 마지막 응답이 도착했을 때만 확정하거나 되돌린다.
+ */
 export interface PendingMove {
   previousStage: Stage;
-  previousIndex: number;
+  /** 원래 바로 앞에 있던 카드. 위치를 인덱스로 기억하면 다른 카드가 움직일 때 어긋난다. */
+  previousAnchorId: string | null;
+  /** 아직 응답을 기다리는 요청 수 */
+  inFlight: number;
 }
 
 export interface Toast {
@@ -44,15 +51,30 @@ export const initialState: State = {
   toast: null,
 };
 
+/** 바로 앞에 있던 카드의 id. 맨 앞이면 null. */
+function anchorOf(order: string[], id: string): string | null {
+  const at = order.indexOf(id);
+  return at > 0 ? order[at - 1] : null;
+}
+
 /** 옮긴 카드를 맨 앞으로 보낸다. 대상 컬럼 최상단에 나타나야 결과가 눈에 띈다. */
 function moveToFront(order: string[], id: string): string[] {
   return [id, ...order.filter((other) => other !== id)];
 }
 
-/** 맨 앞으로 보냈던 카드를 원래 자리로 돌려놓는다. */
-function restorePosition(order: string[], id: string, index: number): string[] {
+/**
+ * 맨 앞으로 보냈던 카드를 원래 자리로 돌려놓는다.
+ * 기준점은 원래 바로 앞에 있던 카드다. 인덱스로 되돌리면 그 사이에 다른 카드가
+ * 앞으로 이동했을 때 한 칸씩 밀린 자리에 들어간다.
+ */
+function restorePosition(order: string[], id: string, anchorId: string | null): string[] {
   const rest = order.filter((other) => other !== id);
-  rest.splice(index, 0, id);
+  if (anchorId === null) return [id, ...rest];
+
+  const at = rest.indexOf(anchorId);
+  if (at === -1) return [...rest, id];
+
+  rest.splice(at + 1, 0, id);
   return rest;
 }
 
@@ -81,42 +103,64 @@ export function applicantsReducer(state: State, action: Action): State {
       const current = state.byId[action.id];
       if (!current) return state;
 
+      const ongoing = state.pending[action.id];
+      // 이미 요청이 떠 있으면 스냅샷을 덮지 않는다.
+      // 덮으면 아직 확정되지 않은 값으로 되돌리게 된다.
+      const snapshot: PendingMove = ongoing
+        ? { ...ongoing, inFlight: ongoing.inFlight + 1 }
+        : {
+            previousStage: current.stage,
+            previousAnchorId: anchorOf(state.order, action.id),
+            inFlight: 1,
+          };
+
       return {
         ...state,
         byId: { ...state.byId, [action.id]: { ...current, stage: action.stage } },
         order: moveToFront(state.order, action.id),
-        pending: {
-          ...state.pending,
-          [action.id]: {
-            previousStage: current.stage,
-            previousIndex: state.order.indexOf(action.id),
-          },
-        },
+        pending: { ...state.pending, [action.id]: snapshot },
       };
     }
 
-    // 화면은 이미 바뀌어 있다. 서버가 준 값으로 맞추고 스냅샷만 버린다.
+    // 화면은 이미 바뀌어 있다. 마지막 응답일 때만 서버 값으로 맞추고 스냅샷을 버린다.
     case "move/success": {
       const { id } = action.applicant;
-      const { [id]: _done, ...pending } = state.pending;
+      const ongoing = state.pending[id];
+      if (!ongoing) return state;
 
-      return {
-        ...state,
-        byId: { ...state.byId, [id]: action.applicant },
-        pending,
-      };
+      if (ongoing.inFlight > 1) {
+        return {
+          ...state,
+          pending: { ...state.pending, [id]: { ...ongoing, inFlight: ongoing.inFlight - 1 } },
+        };
+      }
+
+      const { [id]: _done, ...pending } = state.pending;
+      return { ...state, byId: { ...state.byId, [id]: action.applicant }, pending };
     }
 
     // 스냅샷으로 단계와 위치를 함께 되돌린다. 둘 중 하나만 되돌리면 카드가 엉뚱한 자리에 남는다.
+    // 뒤따르는 요청이 남아 있으면 되돌리지 않는다. 마지막 응답이 최종 상태를 정한다.
     case "move/failure": {
-      const { [action.id]: snapshot, ...pending } = state.pending;
+      const snapshot = state.pending[action.id];
       const current = state.byId[action.id];
       if (!snapshot || !current) return state;
 
+      if (snapshot.inFlight > 1) {
+        return {
+          ...state,
+          pending: {
+            ...state.pending,
+            [action.id]: { ...snapshot, inFlight: snapshot.inFlight - 1 },
+          },
+        };
+      }
+
+      const { [action.id]: _failed, ...pending } = state.pending;
       return {
         ...state,
         byId: { ...state.byId, [action.id]: { ...current, stage: snapshot.previousStage } },
-        order: restorePosition(state.order, action.id, snapshot.previousIndex),
+        order: restorePosition(state.order, action.id, snapshot.previousAnchorId),
         pending,
         toast: { key: (state.toast?.key ?? 0) + 1, message: action.message },
       };
