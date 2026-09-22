@@ -85,3 +85,13 @@ export async function updateStage(id: string, stage: Stage): Promise<Applicant> 
 
   return updated;
 }
+
+/** 시연용. 저장된 데이터를 비운다. 지원자가 0명인 화면을 확인할 때 쓴다. */
+export function clearStore() {
+  writeStore([]);
+}
+
+/** 시연용. 저장된 데이터를 지워 다음 조회에서 다시 시딩되게 한다. */
+export function resetStore() {
+  localStorage.removeItem(STORAGE_KEY);
+}

@@ -28,6 +28,12 @@ npm test        # 단위 테스트
 - [PROMPTS.md](PROMPTS.md) — 기능별 프롬프트와 리뷰/검증 기록
 - [DECISIONS.md](DECISIONS.md) — 설계 결정과 그 근거
 
+## 시연용 패널
+
+보드 위 노란색 패널은 제품 기능이 아니라 mock 환경 조작 장치다.
+조회 실패와 빈 목록은 평소에 재현되지 않아서, 이 패널이 없으면 에러·빈 상태 UI를 확인할 방법이 없다.
+근거는 [DECISIONS.md](DECISIONS.md) D4.
+
 ## 요구사항 분해
 
 지문의 요구사항을 작업 가능한 단위로 쪼개고 ID를 붙였다. ID는 커밋 scope와 1:1로 대응한다.
@@ -39,7 +45,7 @@ npm test        # 단위 테스트
 | M3 | Must | 낙관적 업데이트 + 실패 시 롤백 + 사용자 피드백 | `optimistic-update` | 5 | |
 | M4 | Must | 이름 검색 + 직무 필터 (200건 이상에서도 지연 없이) | `search-filter` | 8 | |
 | M5 | Must | 카드 클릭 시 지원자 상세 | `detail-panel` | 9 | |
-| M6 | Must | 로딩 / 에러 / 빈 상태 | `loading-error-empty` | 3 | |
+| M6 | Must | 로딩 / 에러 / 빈 상태 | `loading-error-empty` | 3 | ✅ |
 | S1 | Should | 같은 카드 연속 이동 시 경쟁 상태 처리 | `race-condition` | 6 | |
 | S2 | Should | 1,000건 기준 스크롤·필터 성능 (가상 스크롤) | `virtualization` | 12 | |
 | S3 | Should | 되돌리기 | `undo` | 11 | |
