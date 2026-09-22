@@ -42,14 +42,16 @@
 }
 
 .column__list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
   margin: 0;
   padding: 0;
   list-style: none;
   max-height: 70vh;
   overflow-y: auto;
+}
+
+/* 보이지 않는 구간을 대신해 자리만 차지한다. */
+.column__spacer {
+  flex: none;
 }
 
 .column__empty {
@@ -61,6 +63,12 @@
 }
 
 .card {
+  /* 가상 스크롤이 높이로 위치를 계산한다. CARD_SLOT_HEIGHT 와 함께 고정한다. */
+  box-sizing: border-box;
+  height: 124px;
+  margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
   padding: 10px;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -189,7 +197,8 @@
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
-  margin-top: 8px;
+  /* 본문이 남은 높이를 채우고 액션은 아래에 붙되, 패딩만큼 여백을 남긴다. */
+  margin-top: auto;
   padding-top: 8px;
   border-top: 1px solid var(--border);
 }
@@ -298,6 +307,8 @@
 
 /* 카드 본문 버튼 — 기본 버튼 모양을 지우고 카드 영역을 그대로 쓴다 */
 .card__open {
+  flex: 1 1 auto;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 2px;
