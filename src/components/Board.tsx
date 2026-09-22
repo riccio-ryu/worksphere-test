@@ -4,11 +4,11 @@ import { Column } from "./Column";
 
 interface Props {
   applicants: Applicant[];
-  moving: Record<string, true>;
+  pendingIds: Record<string, unknown>;
   onMove: (id: string, stage: Stage) => void;
 }
 
-export function Board({ applicants, moving, onMove }: Props) {
+export function Board({ applicants, pendingIds, onMove }: Props) {
   // 단계별로 나누는 일은 목록이 바뀔 때만 하면 된다.
   const grouped = useMemo(() => {
     const map = new Map<Stage, Applicant[]>(STAGES.map((stage) => [stage, []]));
@@ -25,7 +25,7 @@ export function Board({ applicants, moving, onMove }: Props) {
           key={stage}
           stage={stage}
           applicants={grouped.get(stage) ?? []}
-          moving={moving}
+          pendingIds={pendingIds}
           onMove={onMove}
         />
       ))}

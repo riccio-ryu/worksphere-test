@@ -222,3 +222,43 @@
   margin-left: auto;
   color: var(--danger);
 }
+
+/* 서버 응답을 기다리는 카드. 이미 옮겨진 상태라 되돌아갈 수 있음을 표시한다. */
+.card--pending {
+  opacity: 0.6;
+  border-style: dashed;
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 90vw;
+  padding: 12px 14px;
+  font-size: 13px;
+  color: #fff;
+  background: #42526e;
+  border-radius: var(--radius);
+  box-shadow: 0 4px 12px rgba(9, 30, 66, 0.25);
+}
+
+.toast__message {
+  flex: 1;
+}
+
+.toast__close {
+  padding: 2px 6px;
+  color: inherit;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 3px;
+  font-size: 12px;
+}
+
+.toast__close:hover {
+  background: rgba(255, 255, 255, 0.15);
+}

@@ -4,11 +4,11 @@ import { ApplicantCard } from "./ApplicantCard";
 interface Props {
   stage: Stage;
   applicants: Applicant[];
-  moving: Record<string, true>;
+  pendingIds: Record<string, unknown>;
   onMove: (id: string, stage: Stage) => void;
 }
 
-export function Column({ stage, applicants, moving, onMove }: Props) {
+export function Column({ stage, applicants, pendingIds, onMove }: Props) {
   const headingId = `column-heading-${stage}`;
 
   return (
@@ -26,7 +26,7 @@ export function Column({ stage, applicants, moving, onMove }: Props) {
             <ApplicantCard
               key={applicant.id}
               applicant={applicant}
-              moving={Boolean(moving[applicant.id])}
+              pending={Boolean(pendingIds[applicant.id])}
               onMove={onMove}
             />
           ))}

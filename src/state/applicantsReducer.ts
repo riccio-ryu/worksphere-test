@@ -1,6 +1,18 @@
-import type { Applicant } from "../types";
+import type { Applicant, Stage } from "../types";
 
 export type Status = "loading" | "ready" | "error";
+
+/** 낙관적으로 화면을 바꾸기 직전의 모습. 실패하면 이 값으로 되돌린다. */
+export interface PendingMove {
+  previousStage: Stage;
+  previousIndex: number;
+}
+
+export interface Toast {
+  /** 같은 메시지가 연달아 떠도 새 알림으로 인식되도록 매번 증가시킨다. */
+  key: number;
+  message: string;
+}
 
 export interface State {
   status: Status;
@@ -9,25 +21,40 @@ export interface State {
   byId: Record<string, Applicant>;
   /** 표시 순서. 검색·필터는 이 배열만 줄이면 된다. */
   order: string[];
-  /** 이동 요청이 진행 중인 카드. 같은 카드를 다시 누르지 못하게 막는다. */
-  moving: Record<string, true>;
+  /** 서버 응답을 기다리는 이동. 값이 롤백용 스냅샷이다. */
+  pending: Record<string, PendingMove>;
+  toast: Toast | null;
 }
 
 export type Action =
   | { type: "fetch/start" }
   | { type: "fetch/success"; applicants: Applicant[] }
   | { type: "fetch/error"; message: string }
-  | { type: "move/start"; id: string }
+  | { type: "move/start"; id: string; stage: Stage }
   | { type: "move/success"; applicant: Applicant }
-  | { type: "move/failure"; id: string };
+  | { type: "move/failure"; id: string; message: string }
+  | { type: "toast/dismiss" };
 
 export const initialState: State = {
   status: "loading",
   error: null,
   byId: {},
   order: [],
-  moving: {},
+  pending: {},
+  toast: null,
 };
+
+/** 옮긴 카드를 맨 앞으로 보낸다. 대상 컬럼 최상단에 나타나야 결과가 눈에 띈다. */
+function moveToFront(order: string[], id: string): string[] {
+  return [id, ...order.filter((other) => other !== id)];
+}
+
+/** 맨 앞으로 보냈던 카드를 원래 자리로 돌려놓는다. */
+function restorePosition(order: string[], id: string, index: number): string[] {
+  const rest = order.filter((other) => other !== id);
+  rest.splice(index, 0, id);
+  return rest;
+}
 
 export function applicantsReducer(state: State, action: Action): State {
   switch (action.type) {
@@ -43,34 +70,60 @@ export function applicantsReducer(state: State, action: Action): State {
         order.push(applicant.id);
       }
 
-      return { status: "ready", error: null, byId, order, moving: {} };
+      return { ...state, status: "ready", error: null, byId, order, pending: {} };
     }
 
     case "fetch/error":
       return { ...state, status: "error", error: action.message };
 
-    case "move/start":
-      return { ...state, moving: { ...state.moving, [action.id]: true } };
+    // 서버에 보내기 전에 화면부터 바꾼다. 되돌릴 값은 pending 에 남긴다.
+    case "move/start": {
+      const current = state.byId[action.id];
+      if (!current) return state;
 
-    // 서버가 확정한 뒤에 화면을 바꾼다. 낙관적 갱신은 다음 단계에서 붙인다.
+      return {
+        ...state,
+        byId: { ...state.byId, [action.id]: { ...current, stage: action.stage } },
+        order: moveToFront(state.order, action.id),
+        pending: {
+          ...state.pending,
+          [action.id]: {
+            previousStage: current.stage,
+            previousIndex: state.order.indexOf(action.id),
+          },
+        },
+      };
+    }
+
+    // 화면은 이미 바뀌어 있다. 서버가 준 값으로 맞추고 스냅샷만 버린다.
     case "move/success": {
       const { id } = action.applicant;
-      const { [id]: _done, ...moving } = state.moving;
+      const { [id]: _done, ...pending } = state.pending;
 
       return {
         ...state,
         byId: { ...state.byId, [id]: action.applicant },
-        // 옮긴 카드를 맨 앞으로 보내 대상 컬럼 최상단에 오게 한다.
-        // 서버도 같은 규칙으로 저장하므로 새로고침해도 위치가 유지된다.
-        order: [id, ...state.order.filter((other) => other !== id)],
-        moving,
+        pending,
       };
     }
 
+    // 스냅샷으로 단계와 위치를 함께 되돌린다. 둘 중 하나만 되돌리면 카드가 엉뚱한 자리에 남는다.
     case "move/failure": {
-      const { [action.id]: _failed, ...moving } = state.moving;
-      return { ...state, moving };
+      const { [action.id]: snapshot, ...pending } = state.pending;
+      const current = state.byId[action.id];
+      if (!snapshot || !current) return state;
+
+      return {
+        ...state,
+        byId: { ...state.byId, [action.id]: { ...current, stage: snapshot.previousStage } },
+        order: restorePosition(state.order, action.id, snapshot.previousIndex),
+        pending,
+        toast: { key: (state.toast?.key ?? 0) + 1, message: action.message },
+      };
     }
+
+    case "toast/dismiss":
+      return { ...state, toast: null };
 
     default:
       return state;

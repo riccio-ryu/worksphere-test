@@ -2,15 +2,16 @@ import { getStageMoves, REJECTED, type Applicant, type Stage } from "../types";
 
 interface Props {
   applicant: Applicant;
-  moving: boolean;
+  /** 서버 응답을 기다리는 중. 낙관적으로 이미 옮겨진 상태다. */
+  pending: boolean;
   onMove: (id: string, stage: Stage) => void;
 }
 
-export function ApplicantCard({ applicant, moving, onMove }: Props) {
+export function ApplicantCard({ applicant, pending, onMove }: Props) {
   const { prev, next, canReject } = getStageMoves(applicant.stage);
 
   return (
-    <li className="card">
+    <li className={pending ? "card card--pending" : "card"}>
       <p className="card__name">{applicant.name}</p>
       <p className="card__role">{applicant.role}</p>
       <p className="card__meta">
@@ -23,7 +24,7 @@ export function ApplicantCard({ applicant, moving, onMove }: Props) {
           <button
             type="button"
             className="card__action"
-            disabled={moving}
+            disabled={pending}
             onClick={() => onMove(applicant.id, prev)}
             aria-label={`${applicant.name} 지원자를 ${prev} 단계로 이동`}
           >
@@ -34,7 +35,7 @@ export function ApplicantCard({ applicant, moving, onMove }: Props) {
           <button
             type="button"
             className="card__action"
-            disabled={moving}
+            disabled={pending}
             onClick={() => onMove(applicant.id, next)}
             aria-label={`${applicant.name} 지원자를 ${next} 단계로 이동`}
           >
@@ -45,7 +46,7 @@ export function ApplicantCard({ applicant, moving, onMove }: Props) {
           <button
             type="button"
             className="card__action card__action--reject"
-            disabled={moving}
+            disabled={pending}
             onClick={() => onMove(applicant.id, REJECTED)}
             aria-label={`${applicant.name} 지원자를 불합격 처리`}
           >

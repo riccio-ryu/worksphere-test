@@ -2,11 +2,12 @@ import { useMemo } from "react";
 import { Board } from "./components/Board";
 import { BoardEmpty, BoardError, BoardSkeleton } from "./components/BoardStates";
 import { DemoControls } from "./components/DemoControls";
+import { Toast } from "./components/Toast";
 import { useApplicants } from "./state/useApplicants";
 import "./components/board.css";
 
 function App() {
-  const { state, move, reload } = useApplicants();
+  const { state, move, reload, dismissToast } = useApplicants();
 
   // order 와 byId 가 그대로면 같은 배열을 돌려줘 Board 의 그룹핑 메모가 유지된다.
   const applicants = useMemo(
@@ -38,8 +39,12 @@ function App() {
         (applicants.length === 0 ? (
           <BoardEmpty />
         ) : (
-          <Board applicants={applicants} moving={state.moving} onMove={move} />
+          <Board applicants={applicants} pendingIds={state.pending} onMove={move} />
         ))}
+
+      {state.toast && (
+        <Toast toastKey={state.toast.key} message={state.toast.message} onDismiss={dismissToast} />
+      )}
     </main>
   );
 }
