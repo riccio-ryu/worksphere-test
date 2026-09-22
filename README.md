@@ -13,11 +13,19 @@ npm run dev
 
 ## 스택
 
-작성 예정.
+| 항목 | 선택 |
+|---|---|
+| 빌드 | Vite 8 |
+| 프레임워크 | React 19 + TypeScript 6 |
+| 스타일 | 순수 CSS (UI 라이브러리 없음) |
+| 린트 | oxlint (Vite 템플릿 기본) |
+
+선택 근거는 [DECISIONS.md](DECISIONS.md) D1.
 
 ## 문서
 
 - [PROMPTS.md](PROMPTS.md) — 기능별 프롬프트와 리뷰/검증 기록
+- [DECISIONS.md](DECISIONS.md) — 설계 결정과 그 근거
 
 ## 요구사항 분해
 

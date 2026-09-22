@@ -1,0 +1,32 @@
+:root {
+  --bg: #f4f5f7;
+  --surface: #ffffff;
+  --border: #dfe1e6;
+  --text: #172b4d;
+  --text-muted: #5e6c84;
+  --accent: #0052cc;
+  --danger: #c9372c;
+  --radius: 6px;
+
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  color: var(--text);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
