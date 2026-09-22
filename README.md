@@ -8,7 +8,8 @@
 
 ```bash
 npm install
-npm run dev
+npm run dev     # 개발 서버
+npm test        # 단위 테스트
 ```
 
 ## 스택

@@ -2,7 +2,7 @@ import { createApplicants } from "./seed";
 import type { Applicant, Stage } from "../types";
 
 /** 시드 로직이 바뀌면 키를 올려 예전 데이터와 섞이지 않게 한다. */
-const STORAGE_KEY = "worksphere:applicants:v1";
+export const STORAGE_KEY = "worksphere:applicants:v1";
 const SEED_COUNT = 1000;
 
 /**
