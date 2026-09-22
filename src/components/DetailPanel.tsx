@@ -25,7 +25,16 @@ export function DetailPanel({ applicant, pending, onMove, onClose }: Props) {
   const closeRef = useRef<HTMLButtonElement>(null);
   const { prev, next, canReject } = getStageMoves(applicant.stage);
 
+  // 패널이 열려 있는 동안에는 보드 쪽으로 초점을 넘기지 않는다.
+  // 화면은 패널이 덮고 있는데 초점만 뒤쪽 카드에 가 있으면 어디를 조작하는지 알 수 없다.
+  const moveAndStay = (id: string, stage: Stage) => {
+    onMove(id, stage);
+    closeRef.current?.focus();
+  };
+
   // 패널이 열리면 닫기 버튼으로 초점을 옮긴다.
+  // 닫을 때 초점을 되돌리는 일은 App 이 맡는다. 패널에서 단계를 옮기면 그 카드가
+  // 다른 컬럼으로 이동하며 열었던 버튼 자체가 사라지므로, 요소가 아니라 카드 id 로 되돌려야 한다.
   useEffect(() => {
     closeRef.current?.focus();
   }, [applicant.id]);
@@ -109,12 +118,12 @@ export function DetailPanel({ applicant, pending, onMove, onClose }: Props) {
           <span className="panel__actions-label">단계 이동</span>
           <div className="panel__buttons">
             {prev && (
-              <button type="button" className="card__action" disabled={pending} onClick={() => onMove(applicant.id, prev)}>
+              <button type="button" className="card__action" disabled={pending} onClick={() => moveAndStay(applicant.id, prev)}>
                 ← {prev}
               </button>
             )}
             {next && (
-              <button type="button" className="card__action" disabled={pending} onClick={() => onMove(applicant.id, next)}>
+              <button type="button" className="card__action" disabled={pending} onClick={() => moveAndStay(applicant.id, next)}>
                 {next} →
               </button>
             )}
@@ -123,7 +132,7 @@ export function DetailPanel({ applicant, pending, onMove, onClose }: Props) {
                 type="button"
                 className="card__action card__action--reject"
                 disabled={pending}
-                onClick={() => onMove(applicant.id, REJECTED)}
+                onClick={() => moveAndStay(applicant.id, REJECTED)}
               >
                 불합격
               </button>

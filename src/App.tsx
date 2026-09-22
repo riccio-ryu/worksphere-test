@@ -1,10 +1,11 @@
-import { useDeferredValue, useMemo, useState } from "react";
+import { useCallback, useDeferredValue, useMemo, useState } from "react";
 import { Board } from "./components/Board";
 import { ALL_ROLES, BoardFilters } from "./components/BoardFilters";
 import { BoardEmpty, BoardError, BoardSkeleton } from "./components/BoardStates";
 import { DemoControls } from "./components/DemoControls";
 import { DetailPanel } from "./components/DetailPanel";
 import { Toast } from "./components/Toast";
+import { NO_FOCUS_REQUEST, type FocusRequest } from "./state/focusRequest";
 import { useApplicants } from "./state/useApplicants";
 import "./components/board.css";
 
@@ -13,6 +14,25 @@ function App() {
   const [query, setQuery] = useState("");
   const [role, setRole] = useState<string>(ALL_ROLES);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [focusRequest, setFocusRequest] = useState<FocusRequest>(NO_FOCUS_REQUEST);
+
+  // 패널을 닫으면 열었던 카드로 초점을 되돌린다. 되돌리지 않으면 body 로 떨어져
+  // 키보드 사용자가 처음부터 Tab 을 다시 눌러야 한다.
+  const closePanel = () => {
+    const opened = selectedId;
+    setSelectedId(null);
+    if (opened) setFocusRequest((current) => ({ id: opened, seq: current.seq + 1 }));
+  };
+
+  const clearFocusRequest = useCallback(() => {
+    setFocusRequest((current) => (current.id === null ? current : { id: null, seq: current.seq }));
+  }, []);
+
+  // 카드가 다른 컬럼으로 옮겨가면 DOM 에서 사라졌다 다시 생기므로 초점을 되돌려 준다.
+  const moveFromBoard = (id: string, stage: Parameters<typeof move>[1]) => {
+    void move(id, stage);
+    setFocusRequest((current) => ({ id, seq: current.seq + 1 }));
+  };
 
   // 타이핑은 즉시 반영하고 1,000건 재계산은 한 박자 늦춘다.
   // 입력 값과 목록 계산을 같은 렌더에 묶으면 글자마다 보드 전체가 다시 그려져 입력이 끊긴다.
@@ -66,8 +86,10 @@ function App() {
             applicants={visible}
             pendingIds={state.pending}
             selectedId={selectedId}
-            onMove={move}
-            onSelect={(id) => setSelectedId((current) => (current === id ? null : id))}
+            focusRequest={focusRequest}
+            onFocusHandled={clearFocusRequest}
+            onMove={moveFromBoard}
+            onSelect={(id) => (id === selectedId ? closePanel() : setSelectedId(id))}
           />
         ))}
 
@@ -76,7 +98,7 @@ function App() {
           applicant={selected}
           pending={Boolean(state.pending[selected.id])}
           onMove={move}
-          onClose={() => setSelectedId(null)}
+          onClose={closePanel}
         />
       )}
 

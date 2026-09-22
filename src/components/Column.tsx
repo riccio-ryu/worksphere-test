@@ -1,4 +1,5 @@
 import type { Applicant, Stage } from "../types";
+import type { FocusRequest } from "../state/focusRequest";
 import { ApplicantCard } from "./ApplicantCard";
 
 interface Props {
@@ -6,11 +7,13 @@ interface Props {
   applicants: Applicant[];
   pendingIds: Record<string, unknown>;
   selectedId: string | null;
+  focusRequest: FocusRequest;
+  onFocusHandled: () => void;
   onMove: (id: string, stage: Stage) => void;
   onSelect: (id: string) => void;
 }
 
-export function Column({ stage, applicants, pendingIds, selectedId, onMove, onSelect }: Props) {
+export function Column({ stage, applicants, pendingIds, selectedId, focusRequest, onMove, onSelect, onFocusHandled }: Props) {
   const headingId = `column-heading-${stage}`;
 
   return (
@@ -30,6 +33,8 @@ export function Column({ stage, applicants, pendingIds, selectedId, onMove, onSe
               applicant={applicant}
               pending={Boolean(pendingIds[applicant.id])}
               selected={selectedId === applicant.id}
+              focusRequest={focusRequest}
+              onFocusHandled={onFocusHandled}
               onMove={onMove}
               onSelect={onSelect}
             />

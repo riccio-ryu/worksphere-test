@@ -70,7 +70,7 @@ mock API는 쓰기 요청을 약 15% 확률로 실패시킨다. 실패하면 **�
 | S2 | Should | 1,000건 기준 스크롤·필터 성능 (가상 스크롤) | `virtualization` | 12 | |
 | S3 | Should | 되돌리기 | `undo` | 11 | |
 | S4 | Should | 핵심 로직(롤백) 테스트 | `test` | 7 | ✅ |
-| S5 | Should | 키보드만으로 단계 이동·상세 열람 | `a11y-keyboard` | 10 | |
+| S5 | Should | 키보드만으로 단계 이동·상세 열람 | `a11y-keyboard` | 10 | ✅ |
 | C1 | 제약 | mock API — 지연 200~800ms, 실패 약 15%, 영속 | `mock-api` | 1 | ✅ |
 
 ### 작업 순서를 이렇게 잡은 이유

@@ -1,16 +1,19 @@
 import { useMemo } from "react";
 import { STAGES, type Applicant, type Stage } from "../types";
+import type { FocusRequest } from "../state/focusRequest";
 import { Column } from "./Column";
 
 interface Props {
   applicants: Applicant[];
   pendingIds: Record<string, unknown>;
   selectedId: string | null;
+  focusRequest: FocusRequest;
+  onFocusHandled: () => void;
   onMove: (id: string, stage: Stage) => void;
   onSelect: (id: string) => void;
 }
 
-export function Board({ applicants, pendingIds, selectedId, onMove, onSelect }: Props) {
+export function Board({ applicants, pendingIds, selectedId, focusRequest, onMove, onSelect, onFocusHandled }: Props) {
   // 단계별로 나누는 일은 목록이 바뀔 때만 하면 된다.
   const grouped = useMemo(() => {
     const map = new Map<Stage, Applicant[]>(STAGES.map((stage) => [stage, []]));
@@ -29,6 +32,8 @@ export function Board({ applicants, pendingIds, selectedId, onMove, onSelect }: 
           applicants={grouped.get(stage) ?? []}
           pendingIds={pendingIds}
           selectedId={selectedId}
+          focusRequest={focusRequest}
+          onFocusHandled={onFocusHandled}
           onMove={onMove}
           onSelect={onSelect}
         />
