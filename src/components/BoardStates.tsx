@@ -35,11 +35,17 @@ export function BoardError({ message, onRetry }: ErrorProps) {
   );
 }
 
-export function BoardEmpty() {
+export function BoardEmpty({ filtered }: { filtered: boolean }) {
   return (
     <div className="state">
-      <p className="state__title">등록된 지원자가 없습니다</p>
-      <p className="state__body">지원자가 등록되면 단계별로 이곳에 표시됩니다.</p>
+      <p className="state__title">
+        {filtered ? "조건에 맞는 지원자가 없습니다" : "등록된 지원자가 없습니다"}
+      </p>
+      <p className="state__body">
+        {filtered
+          ? "이름 검색어나 직무 필터를 바꿔 보세요."
+          : "지원자가 등록되면 단계별로 이곳에 표시됩니다."}
+      </p>
     </div>
   );
 }

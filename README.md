@@ -63,7 +63,7 @@ mock API는 쓰기 요청을 약 15% 확률로 실패시킨다. 실패하면 **�
 | M1 | Must | 단계별 컬럼에 지원자 카드 (이름·직무·지원일·현재 단계) | `board-layout` | 2 | ✅ |
 | M2 | Must | 단계 이동 + mock API 저장 (새로고침 후 유지) | `stage-move` | 4 | ✅ |
 | M3 | Must | 낙관적 업데이트 + 실패 시 롤백 + 사용자 피드백 | `optimistic-update` | 5 | ✅ |
-| M4 | Must | 이름 검색 + 직무 필터 (200건 이상에서도 지연 없이) | `search-filter` | 8 | |
+| M4 | Must | 이름 검색 + 직무 필터 (200건 이상에서도 지연 없이) | `search-filter` | 8 | ✅ |
 | M5 | Must | 카드 클릭 시 지원자 상세 | `detail-panel` | 9 | |
 | M6 | Must | 로딩 / 에러 / 빈 상태 | `loading-error-empty` | 3 | ✅ |
 | S1 | Should | 같은 카드 연속 이동 시 경쟁 상태 처리 | `race-condition` | 6 | |
