@@ -436,3 +436,22 @@
 @media (max-width: 900px) {
   .panel { width: 100%; }
 }
+
+.undo {
+  position: fixed;
+  left: 24px;
+  bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px 8px 14px;
+  font-size: 13px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 2px 10px rgba(9, 30, 66, 0.15);
+}
+
+.undo__text {
+  color: var(--text-muted);
+}

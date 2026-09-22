@@ -33,11 +33,11 @@ export interface Applicant {
  * 합격 경로. 이전/다음 버튼은 이 순서를 따라 움직인다.
  * 불합격은 어느 단계에서나 갈 수 있는 분기라서 이 배열에 넣지 않는다.
  */
-export const MAIN_PATH = ["서류검토", "면접", "처우협의", "최종합격"] as const;
+const MAIN_PATH = ["서류검토", "면접", "처우협의", "최종합격"] as const;
 
 export const REJECTED: Stage = "불합격";
 
-export interface StageMoves {
+interface StageMoves {
   prev: Stage | null;
   next: Stage | null;
   /** 불합격으로 보낼 수 있는지. 이미 불합격이면 false */

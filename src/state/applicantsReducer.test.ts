@@ -239,3 +239,59 @@ describe("경쟁 상태", () => {
     expect(state.pending).toEqual({});
   });
 });
+
+describe("되돌리기 대상", () => {
+  it("서버까지 반영된 이동만 기억한다", () => {
+    const started = applicantsReducer(ready(), { type: "move/start", id: "A3", stage: "면접" });
+    // 화면만 바뀐 상태에서는 되돌릴 것이 없다.
+    expect(started.lastMove).toBeNull();
+
+    const done = applicantsReducer(started, {
+      type: "move/success",
+      applicant: applicant("A3", "면접"),
+    });
+    expect(done.lastMove).toEqual({ id: "A3", name: "지원자A3", from: "서류검토", to: "면접" });
+  });
+
+  it("실패한 이동은 되돌리기 대상이 아니다", () => {
+    const started = applicantsReducer(ready(), { type: "move/start", id: "A3", stage: "면접" });
+    const failed = applicantsReducer(started, {
+      type: "move/failure",
+      id: "A3",
+      message: "저장 실패",
+    });
+
+    expect(failed.lastMove).toBeNull();
+  });
+
+  it("되돌리기는 한 번만 제공한다", () => {
+    let state = applicantsReducer(ready(), { type: "move/start", id: "A3", stage: "면접" });
+    state = applicantsReducer(state, { type: "move/success", applicant: applicant("A3", "면접") });
+    state = applicantsReducer(state, { type: "undo/clear" });
+
+    expect(state.lastMove).toBeNull();
+  });
+
+  it("되돌린 이동이 성공하면 그것이 새 되돌리기 대상이 된다", () => {
+    let state = applicantsReducer(ready(), { type: "move/start", id: "A3", stage: "면접" });
+    state = applicantsReducer(state, { type: "move/success", applicant: applicant("A3", "면접") });
+    state = applicantsReducer(state, { type: "undo/clear" });
+
+    // 되돌리기도 결국 하나의 이동이다.
+    state = applicantsReducer(state, { type: "move/start", id: "A3", stage: "서류검토" });
+    state = applicantsReducer(state, {
+      type: "move/success",
+      applicant: applicant("A3", "서류검토"),
+    });
+
+    expect(state.lastMove).toEqual({ id: "A3", name: "지원자A3", from: "면접", to: "서류검토" });
+  });
+
+  it("다시 불러오면 되돌리기 대상이 사라진다", () => {
+    let state = applicantsReducer(ready(), { type: "move/start", id: "A3", stage: "면접" });
+    state = applicantsReducer(state, { type: "move/success", applicant: applicant("A3", "면접") });
+    state = applicantsReducer(state, { type: "fetch/success", applicants: [applicant("A1")] });
+
+    expect(state.lastMove).toBeNull();
+  });
+});

@@ -5,12 +5,13 @@ import { BoardEmpty, BoardError, BoardSkeleton } from "./components/BoardStates"
 import { DemoControls } from "./components/DemoControls";
 import { DetailPanel } from "./components/DetailPanel";
 import { Toast } from "./components/Toast";
+import { UndoBar } from "./components/UndoBar";
 import { NO_FOCUS_REQUEST, type FocusRequest } from "./state/focusRequest";
 import { useApplicants } from "./state/useApplicants";
 import "./components/board.css";
 
 function App() {
-  const { state, move, reload, dismissToast } = useApplicants();
+  const { state, move, undo, reload, dismissToast } = useApplicants();
   const [query, setQuery] = useState("");
   const [role, setRole] = useState<string>(ALL_ROLES);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -99,6 +100,17 @@ function App() {
           pending={Boolean(state.pending[selected.id])}
           onMove={move}
           onClose={closePanel}
+        />
+      )}
+
+      {state.lastMove && (
+        <UndoBar
+          lastMove={state.lastMove}
+          onUndo={() => {
+            const target = state.lastMove;
+            void undo();
+            if (target) setFocusRequest((current) => ({ id: target.id, seq: current.seq + 1 }));
+          }}
         />
       )}
 
